@@ -1,7 +1,15 @@
-FROM ossrs/srs:dev AS build
+ARG ARCH
+FROM ${ARCH}ossrs/srs:ubuntu20 AS build
+
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+RUN echo "BUILDPLATFORM: $BUILDPLATFORM, TARGETPLATFORM: $TARGETPLATFORM"
+
+# https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
+ENV DEBIAN_FRONTEND noninteractive
 
 # Install depends tools.
-RUN yum install -y gcc make gcc-c++ patch unzip perl git
+RUN apt-get update && apt-get install -y gcc make g++ patch unzip perl git
 
 ARG SRS_AUTO_PACKAGER
 
@@ -22,7 +30,11 @@ RUN cp -R conf /usr/local/srs/conf && \
 ############################################################
 # dist
 ############################################################
-FROM centos:7 AS dist
+FROM ${ARCH}ubuntu:focal AS dist
+
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+RUN echo "BUILDPLATFORM: $BUILDPLATFORM, TARGETPLATFORM: $TARGETPLATFORM"
 
 # Expose ports for streaming @see https://github.com/ossrs/srs#ports
 EXPOSE 1935 1985 8080 8000/udp 10080/udp
